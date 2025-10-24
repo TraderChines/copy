@@ -26,7 +26,11 @@ import {
   CheckCircle2,
   XCircle,
   TrendingUp,
+  Sparkles,
 } from "lucide-react";
+import PerformanceChart from "@/components/performance-chart";
+import { parseTradeResult } from "@/lib/utils";
+import AiAnalysis from "@/components/ai-analysis";
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("pt-BR", {
@@ -45,14 +49,7 @@ export default function DashboardPage() {
     history,
   } = traderData;
 
-  const totalProfit = history.reduce((acc, trade) => {
-    const value = parseFloat(
-      trade.result
-        .replace(/[^\d,-]/g, "")
-        .replace(",", ".")
-    );
-    return acc + value;
-  }, 0);
+  const totalProfit = history.reduce((acc, trade) => acc + parseTradeResult(trade.result), 0);
 
   const stats = [
     {
@@ -80,6 +77,23 @@ export default function DashboardPage() {
       color: "text-amber-400",
     },
   ];
+
+  const chartData = history
+    .slice()
+    .reverse()
+    .reduce((acc, trade) => {
+      const profit = parseTradeResult(trade.result);
+      const lastCumulativeProfit = acc.length > 0 ? acc[acc.length - 1].cumulativeProfit : 0;
+      const newCumulativeProfit = lastCumulativeProfit + profit;
+      
+      acc.push({
+        name: new Date(trade.date.split(" ")[0].split("/").reverse().join("-")).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+        profit: newCumulativeProfit,
+        cumulativeProfit: newCumulativeProfit,
+      });
+      return acc;
+    }, [] as { name: string; profit: number; cumulativeProfit: number }[]);
+
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 sm:p-6 lg:p-8">
@@ -135,8 +149,37 @@ export default function DashboardPage() {
             </Card>
           ))}
         </div>
+        
+        <div className="grid gap-8 lg:grid-cols-3 mb-8">
+            <Card className="lg:col-span-2 animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '400ms' }}>
+                <CardHeader>
+                <CardTitle>Evolução do Lucro</CardTitle>
+                <CardDescription>
+                    Gráfico do lucro acumulado ao longo do tempo.
+                </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <PerformanceChart data={chartData} />
+                </CardContent>
+            </Card>
+            <Card className="animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '500ms' }}>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Sparkles className="text-primary w-5 h-5" />
+                        Análise de IA
+                    </CardTitle>
+                    <CardDescription>
+                        Peça à IA para analisar o desempenho do trader.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <AiAnalysis history={history} />
+                </CardContent>
+            </Card>
+        </div>
 
-        <Card className="animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '500ms' }}>
+
+        <Card className="animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '600ms' }}>
           <CardHeader>
             <CardTitle>Histórico de Operações</CardTitle>
             <CardDescription>

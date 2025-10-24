@@ -1,4 +1,4 @@
-interface Trade {
+export interface Trade {
   date: string;
   asset: string;
   amount: number;
