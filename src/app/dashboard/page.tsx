@@ -30,8 +30,6 @@ import {
   Trash2,
   PlusCircle,
 } from "lucide-react";
-import PerformanceChart from "@/components/performance-chart";
-import { parseTradeResult } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -113,22 +111,6 @@ export default function DashboardPage() {
       color: "text-amber-400",
     },
   ];
-
-  const chartData = history
-    .slice()
-    .reverse()
-    .reduce((acc, trade) => {
-      const profit = parseTradeResult(trade.result);
-      const lastCumulativeProfit = acc.length > 0 ? acc[acc.length - 1].cumulativeProfit : 0;
-      const newCumulativeProfit = lastCumulativeProfit + profit;
-      
-      acc.push({
-        name: new Date(trade.date.split(" ")[0].split("/").reverse().join("-")).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
-        profit: newCumulativeProfit,
-        cumulativeProfit: newCumulativeProfit,
-      });
-      return acc;
-    }, [] as { name: string; profit: number; cumulativeProfit: number }[]);
 
   const handleOpenEditModal = () => {
     setEditedData(traderData);
@@ -227,18 +209,6 @@ export default function DashboardPage() {
             </Card>
           ))}
         </div>
-        
-        <div className="grid gap-8 mb-8">
-            <Card className="animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '400ms' }}>
-                <CardHeader>
-                <CardTitle>Evolução do Lucro</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <PerformanceChart data={chartData} />
-                </CardContent>
-            </Card>
-        </div>
-
 
         <Card className="animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '600ms' }}>
           <CardHeader>
@@ -465,5 +435,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
