@@ -34,6 +34,8 @@ import {
   Edit,
   Trash2,
   PlusCircle,
+  Minus,
+  Plus
 } from "lucide-react";
 import PerformanceChart from "@/components/performance-chart";
 import { parseTradeResult } from "@/lib/utils";
@@ -151,6 +153,13 @@ export default function DashboardPage() {
     (newHistory[index] as any)[field] = value;
     setEditedData({ ...editedData, history: newHistory });
   };
+
+  const handleResultButtonClick = (index: number, type: 'win' | 'loss') => {
+    const trade = editedData.history[index];
+    const resultValue = trade.amount * 0.85; // Example payout
+    const resultString = `${type === 'win' ? '+' : '-'}R$${resultValue.toFixed(2).replace('.', ',')}`;
+    handleHistoryChange(index, 'result', resultString);
+  };
   
   const handleRemoveTrade = (index: number) => {
     const newHistory = editedData.history.filter((_, i) => i !== index);
@@ -160,10 +169,10 @@ export default function DashboardPage() {
   const handleAddTrade = () => {
     const newTrade: Trade = {
         date: new Intl.DateTimeFormat('pt-BR', { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date()),
-        asset: 'Novo Ativo',
+        asset: 'EUR/USD',
         type: "Call",
         amount: editedData.tradeValue,
-        result: '+R$0,00'
+        result: `+R$${(editedData.tradeValue * 0.85).toFixed(2).replace('.', ',')}`
     };
     const newHistory = [newTrade, ...editedData.history];
     setEditedData({ ...editedData, history: newHistory });
@@ -403,12 +412,12 @@ export default function DashboardPage() {
                 <ScrollArea className="h-80 pr-4">
                 <div className="space-y-3">
                     {editedData.history.map((trade, index) => (
-                    <div key={index} className="flex gap-2 items-start p-2 rounded-md border bg-muted/20">
+                    <div key={index} className="flex gap-2 items-start p-3 rounded-md border bg-muted/20">
                         <div className="flex-1 grid grid-cols-2 gap-2">
                             <Input
                                 value={trade.date}
                                 onChange={(e) => handleHistoryChange(index, 'date', e.target.value)}
-                                className="text-xs h-8"
+                                className="text-xs h-8 col-span-2"
                                 placeholder="Data/Hora"
                             />
                             <Select
@@ -436,24 +445,34 @@ export default function DashboardPage() {
                                 <SelectItem value="Put">Put</SelectItem>
                                 </SelectContent>
                             </Select>
-                            <Input
-                                type="number"
-                                value={trade.amount}
-                                onChange={(e) => handleHistoryChange(index, 'amount', parseFloat(e.target.value) || 0)}
-                                className="text-xs h-8"
-                                placeholder="Valor"
-                            />
-                             <Input
-                                value={trade.result}
-                                onChange={(e) => handleHistoryChange(index, 'result', e.target.value)}
-                                className="text-xs h-8 col-span-2"
-                                placeholder="Resultado"
-                            />
+                            <div className="col-span-2 space-y-2">
+                                <Label className="text-xs">Valor da Operação</Label>
+                                <Input
+                                    type="number"
+                                    value={trade.amount}
+                                    onChange={(e) => handleHistoryChange(index, 'amount', parseFloat(e.target.value) || 0)}
+                                    className="text-xs h-8"
+                                    placeholder="Valor"
+                                />
+                            </div>
+                            <div className="col-span-2 space-y-2">
+                                <Label className="text-xs">Resultado</Label>
+                                <div className="flex gap-2">
+                                    <Button size="sm" className="flex-1 bg-emerald-500/80 hover:bg-emerald-500 text-white text-xs h-8" onClick={() => handleResultButtonClick(index, 'win')}>Win</Button>
+                                    <Button size="sm" className="flex-1 bg-red-500/80 hover:bg-red-500 text-white text-xs h-8" onClick={() => handleResultButtonClick(index, 'loss')}>Loss</Button>
+                                </div>
+                                <Input
+                                    value={trade.result}
+                                    onChange={(e) => handleHistoryChange(index, 'result', e.target.value)}
+                                    className="text-xs h-8 mt-2"
+                                    placeholder="+R$0,00"
+                                />
+                            </div>
                         </div>
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:bg-destructive/20 hover:text-destructive flex-shrink-0"
+                            className="h-8 w-8 text-muted-foreground hover:bg-destructive/20 hover:text-destructive flex-shrink-0 mt-5"
                             onClick={() => handleRemoveTrade(index)}
                         >
                             <Trash2 className="h-4 w-4"/>
@@ -479,3 +498,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
