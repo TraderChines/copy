@@ -70,7 +70,7 @@ export default function DashboardPage() {
     history,
   } = traderData;
 
-  const totalProfit = history.reduce((acc, trade) => acc + parseTradeResult(trade.result), 0);
+  const totalProfit = currentBalance - initialBalance;
 
   const stats = [
     {
