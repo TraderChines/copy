@@ -6,5 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function parseTradeResult(result: string): number {
-  return parseFloat(result.replace(/[^\d,-]/g, "").replace(",", "."));
+  const sanitized = result.replace("R$", "").replace(".", "").replace(",", ".");
+  const value = parseFloat(sanitized);
+  return isNaN(value) ? 0 : value;
 }

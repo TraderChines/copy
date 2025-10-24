@@ -47,7 +47,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -55,7 +54,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
+import { parseTradeResult } from "@/lib/utils";
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("pt-BR", {
@@ -75,10 +74,22 @@ const assetOptions = [
   "USD/JPY (OTC)",
 ];
 
+const emptyTrade: Trade = {
+  date: new Intl.DateTimeFormat('pt-BR', { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date()),
+  asset: 'EUR/USD',
+  type: "Call",
+  amount: 0,
+  result: '+R$0,00'
+};
+
 export default function DashboardPage() {
   const [traderData, setTraderData] = useState<TraderData>(initialTraderData);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editedData, setEditedData] = useState(traderData);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isTradeModalOpen, setIsTradeModalOpen] = useState(false);
+  
+  const [editedProfile, setEditedProfile] = useState(traderData);
+  const [editedTrade, setEditedTrade] = useState<Trade | null>(null);
+  const [editedTradeIndex, setEditedTradeIndex] = useState<number | null>(null);
 
   const {
     name,
@@ -118,48 +129,75 @@ export default function DashboardPage() {
     },
   ];
 
-  const handleOpenEditModal = () => {
-    setEditedData(traderData);
-    setIsEditModalOpen(true);
+  const handleOpenProfileModal = () => {
+    setEditedProfile(traderData);
+    setIsProfileModalOpen(true);
   };
   
-  const handleSaveChanges = () => {
-    setTraderData({ ...editedData });
-    setIsEditModalOpen(false);
+  const handleSaveProfile = () => {
+    const newCurrentBalance = editedProfile.history.reduce((acc, trade) => acc + parseTradeResult(trade.result), editedProfile.initialBalance);
+    setTraderData({ ...editedProfile, currentBalance: newCurrentBalance });
+    setIsProfileModalOpen(false);
   };
 
-  const handleHistoryChange = (index: number, field: keyof Trade, value: string | number) => {
-    const newHistory = [...editedData.history];
-    (newHistory[index] as any)[field] = value;
-    setEditedData({ ...editedData, history: newHistory });
+  const handleOpenTradeModal = (trade: Trade | null, index: number | null) => {
+    setEditedTrade(trade ? { ...trade } : { ...emptyTrade, amount: traderData.tradeValue });
+    setEditedTradeIndex(index);
+    setIsTradeModalOpen(true);
   };
 
-  const handleResultButtonClick = (index: number, type: 'win' | 'loss') => {
-    const trade = editedData.history[index];
-    const resultValue = trade.amount * 0.85; // Example payout
+  const handleSaveTrade = () => {
+    if (!editedTrade) return;
+
+    let newHistory: Trade[];
+    if (editedTradeIndex !== null) {
+      // Edit existing trade
+      newHistory = traderData.history.map((trade, index) =>
+        index === editedTradeIndex ? editedTrade : trade
+      );
+    } else {
+      // Add new trade
+      newHistory = [editedTrade, ...traderData.history];
+    }
+    
+    const newCurrentBalance = newHistory.reduce((acc, trade) => acc + parseTradeResult(trade.result), traderData.initialBalance);
+
+    setTraderData({
+      ...traderData,
+      history: newHistory,
+      currentBalance: newCurrentBalance,
+    });
+
+    setIsTradeModalOpen(false);
+    setEditedTrade(null);
+    setEditedTradeIndex(null);
+  };
+
+  const handleRemoveTrade = (indexToRemove: number) => {
+    const newHistory = traderData.history.filter((_, index) => index !== indexToRemove);
+    const newCurrentBalance = newHistory.reduce((acc, trade) => acc + parseTradeResult(trade.result), traderData.initialBalance);
+    setTraderData({
+      ...traderData,
+      history: newHistory,
+      currentBalance: newCurrentBalance,
+    });
+  };
+
+  const handleTradeInputChange = (field: keyof Trade, value: string | number) => {
+    if (editedTrade) {
+      setEditedTrade({ ...editedTrade, [field]: value });
+    }
+  };
+
+  const handleResultButtonClick = (type: 'win' | 'loss') => {
+    if (!editedTrade) return;
+    const payout = 0.85; // 85% payout
+    const resultValue = editedTrade.amount * payout;
     const resultString = `${type === 'win' ? '+' : '-'}R$${resultValue.toFixed(2).replace('.', ',')}`;
-    handleHistoryChange(index, 'result', resultString);
-  };
-  
-  const handleRemoveTrade = (index: number) => {
-    const newHistory = editedData.history.filter((_, i) => i !== index);
-    setEditedData({ ...editedData, history: newHistory });
+    handleTradeInputChange('result', resultString);
   };
 
-  const handleAddTrade = () => {
-    const newTrade: Trade = {
-        date: new Intl.DateTimeFormat('pt-BR', { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date()),
-        asset: 'EUR/USD',
-        type: "Call",
-        amount: editedData.tradeValue,
-        result: `+R$${(editedData.tradeValue * 0.85).toFixed(2).replace('.', ',')}`
-    };
-    const newHistory = [newTrade, ...editedData.history];
-    setEditedData({ ...editedData, history: newHistory });
-  };
-
-  const editedTotalProfit = editedData.currentBalance - editedData.initialBalance;
-
+  const editedTotalProfit = editedProfile.currentBalance - editedProfile.initialBalance;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -175,19 +213,15 @@ export default function DashboardPage() {
                 Página Inicial
               </Link>
             </Button>
-            <Button variant="default" size="sm" onClick={handleOpenEditModal}>
-              <Settings className="mr-2 h-4 w-4" />
-              Editar Dados
-            </Button>
           </div>
       </header>
       <main className="p-4 sm:p-6 lg:p-8 grid gap-8 md:grid-cols-3">
         <div className="md:col-span-1 flex flex-col gap-8">
             <Card className="overflow-hidden">
                 <div className="bg-gradient-to-br from-primary/10 to-accent/10 h-24 relative">
-                    <button onClick={handleOpenEditModal} className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors">
-                        <MoreVertical size={20}/>
-                    </button>
+                    <Button variant="ghost" size="icon" onClick={handleOpenProfileModal} className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors">
+                        <Settings size={18}/>
+                    </Button>
                 </div>
                 <CardContent className="relative text-center p-6 pt-0">
                     <Avatar className="w-24 h-24 mx-auto -mt-12 border-4 border-background">
@@ -227,9 +261,15 @@ export default function DashboardPage() {
           </div>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Histórico de Operações</CardTitle>
-              <CardDescription>As últimas 10 operações realizadas.</CardDescription>
+            <CardHeader className="flex justify-between items-center">
+              <div>
+                <CardTitle>Histórico de Operações</CardTitle>
+                <CardDescription>As últimas operações realizadas.</CardDescription>
+              </div>
+              <Button size="sm" onClick={() => handleOpenTradeModal(null, null)}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Adicionar Operação
+              </Button>
             </CardHeader>
             <CardContent>
               <Table>
@@ -240,10 +280,11 @@ export default function DashboardPage() {
                       <TableHead>Tipo</TableHead>
                       <TableHead className="text-right">Valor</TableHead>
                       <TableHead className="text-right">Resultado</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {history.slice(0, 10).map((trade, index) => (
+                    {history.map((trade, index) => (
                       <TableRow key={index}>
                         <TableCell className="font-medium">{trade.date}</TableCell>
                         <TableCell>{trade.asset}</TableCell>
@@ -264,6 +305,16 @@ export default function DashboardPage() {
                         >
                           {trade.result}
                         </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex gap-2 justify-end">
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenTradeModal(trade, index)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-400" onClick={() => handleRemoveTrade(index)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                          </div>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -273,167 +324,64 @@ export default function DashboardPage() {
         </div>
       </main>
       
-      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-4xl">
+      {/* Profile Edit Modal */}
+      <Dialog open={isProfileModalOpen} onOpenChange={setIsProfileModalOpen}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Editar Dados do Trader</DialogTitle>
+            <DialogTitle>Editar Perfil do Trader</DialogTitle>
             <DialogDescription>
-              Altere as informações abaixo e clique em salvar.
+              Altere as informações gerais e clique em salvar. O saldo atual será recalculado com base no histórico.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 py-4">
-            <div className="space-y-4 pr-4 border-r border-border">
-                <h3 className="text-lg font-medium text-foreground mb-4">Informações Gerais</h3>
-                <div className="grid grid-cols-3 items-center gap-4">
-                    <Label htmlFor="name" className="text-right">
-                        Nome
-                    </Label>
-                    <Input
-                        id="name"
-                        value={editedData.name}
-                        onChange={(e) => setEditedData({ ...editedData, name: e.target.value })}
-                        className="col-span-2"
-                    />
-                </div>
-                <div className="grid grid-cols-3 items-center gap-4">
-                    <Label htmlFor="initialBalance" className="text-right">
-                        Saldo Inicial
-                    </Label>
-                    <Input
-                        id="initialBalance"
-                        type="number"
-                        value={editedData.initialBalance}
-                        onChange={(e) => setEditedData({ ...editedData, initialBalance: parseFloat(e.target.value) || 0 })}
-                        className="col-span-2"
-                    />
-                </div>
-                <div className="grid grid-cols-3 items-center gap-4">
-                    <Label htmlFor="currentBalance" className="text-right">
-                        Saldo Atual
-                    </Label>
-                    <Input
-                        id="currentBalance"
-                        type="number"
-                        value={editedData.currentBalance}
-                        onChange={(e) => setEditedData({ ...editedData, currentBalance: parseFloat(e.target.value) || 0 })}
-                        className="col-span-2"
-                    />
-                </div>
-                 <div className="grid grid-cols-3 items-center gap-4">
-                    <Label className="text-right">Lucro Total</Label>
-                    <div className="col-span-2 font-bold text-lg">
-                        <span className={editedTotalProfit > 0 ? 'text-emerald-400' : 'text-red-400'}>
-                            {formatCurrency(editedTotalProfit)}
-                        </span>
-                    </div>
-                </div>
-                <div className="grid grid-cols-3 items-center gap-4">
-                    <Label htmlFor="tradeValue" className="text-right">
-                        Valor/Operação
-                    </Label>
-                    <Input
-                        id="tradeValue"
-                        type="number"
-                        value={editedData.tradeValue}
-                        onChange={(e) => setEditedData({ ...editedData, tradeValue: parseFloat(e.target.value) || 0 })}
-                        className="col-span-2"
-                    />
-                </div>
-                <div className="grid grid-cols-3 items-center gap-4">
-                    <Label htmlFor="status" className="text-right">
-                        Status
-                    </Label>
-                    <div className="col-span-2 flex items-center space-x-2">
-                        <Switch
-                        id="status"
-                        checked={editedData.status === 'Online'}
-                        onCheckedChange={(checked) => setEditedData({ ...editedData, status: checked ? 'Online' : 'Offline' })}
-                        />
-                        <Label htmlFor="status" className={editedData.status === 'Online' ? 'text-emerald-400' : 'text-red-400'}>{editedData.status}</Label>
-                    </div>
-                </div>
-            </div>
-            
-            <div className="space-y-4">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-medium text-foreground">Histórico de Operações</h3>
-                    <Button variant="outline" size="sm" onClick={handleAddTrade}>
-                        <PlusCircle className="mr-2 h-4 w-4"/> Adicionar Operação
-                    </Button>
-                </div>
-                <ScrollArea className="h-80 pr-4">
-                <div className="space-y-3">
-                    {editedData.history.map((trade, index) => (
-                    <div key={index} className="flex gap-2 items-start p-3 rounded-md border bg-muted/20">
-                        <div className="flex-1 grid grid-cols-2 gap-2">
-                            <Input
-                                value={trade.date}
-                                onChange={(e) => handleHistoryChange(index, 'date', e.target.value)}
-                                className="text-xs h-8 col-span-2"
-                                placeholder="Data/Hora"
-                            />
-                            <Select
-                                value={trade.asset}
-                                onValueChange={(value) => handleHistoryChange(index, "asset", value)}
-                            >
-                                <SelectTrigger className="text-xs h-8">
-                                <SelectValue placeholder="Ativo" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {assetOptions.map(option => (
-                                    <SelectItem key={option} value={option}>{option}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                            </Select>
-                            <Select
-                                value={trade.type}
-                                onValueChange={(value) => handleHistoryChange(index, "type", value)}
-                            >
-                                <SelectTrigger className="text-xs h-8">
-                                <SelectValue placeholder="Tipo" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                <SelectItem value="Call">Call</SelectItem>
-                                <SelectItem value="Put">Put</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <div className="col-span-2 space-y-2">
-                                <Label className="text-xs">Valor da Operação</Label>
-                                <Input
-                                    type="number"
-                                    value={trade.amount}
-                                    onChange={(e) => handleHistoryChange(index, 'amount', parseFloat(e.target.value) || 0)}
-                                    className="text-xs h-8"
-                                    placeholder="Valor"
-                                />
-                            </div>
-                            <div className="col-span-2 space-y-2">
-                                <Label className="text-xs">Resultado</Label>
-                                <div className="flex gap-2">
-                                    <Button size="sm" className="flex-1 bg-emerald-500/80 hover:bg-emerald-500 text-white text-xs h-8" onClick={() => handleResultButtonClick(index, 'win')}>Win</Button>
-                                    <Button size="sm" className="flex-1 bg-red-500/80 hover:bg-red-500 text-white text-xs h-8" onClick={() => handleResultButtonClick(index, 'loss')}>Loss</Button>
-                                </div>
-                                <Input
-                                    value={trade.result}
-                                    onChange={(e) => handleHistoryChange(index, 'result', e.target.value)}
-                                    className="text-xs h-8 mt-2"
-                                    placeholder="+R$0,00"
-                                />
-                            </div>
-                        </div>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:bg-destructive/20 hover:text-destructive flex-shrink-0 mt-5"
-                            onClick={() => handleRemoveTrade(index)}
-                        >
-                            <Trash2 className="h-4 w-4"/>
-                        </Button>
-                    </div>
-                    ))}
-                </div>
-                </ScrollArea>
-            </div>
+          <div className="space-y-4 py-4">
+              <div className="grid grid-cols-3 items-center gap-4">
+                  <Label htmlFor="name" className="text-right">
+                      Nome
+                  </Label>
+                  <Input
+                      id="name"
+                      value={editedProfile.name}
+                      onChange={(e) => setEditedProfile({ ...editedProfile, name: e.target.value })}
+                      className="col-span-2"
+                  />
+              </div>
+              <div className="grid grid-cols-3 items-center gap-4">
+                  <Label htmlFor="initialBalance" className="text-right">
+                      Saldo Inicial
+                  </Label>
+                  <Input
+                      id="initialBalance"
+                      type="number"
+                      value={editedProfile.initialBalance}
+                      onChange={(e) => setEditedProfile({ ...editedProfile, initialBalance: parseFloat(e.target.value) || 0 })}
+                      className="col-span-2"
+                  />
+              </div>
+              <div className="grid grid-cols-3 items-center gap-4">
+                  <Label htmlFor="tradeValue" className="text-right">
+                      Valor/Operação
+                  </Label>
+                  <Input
+                      id="tradeValue"
+                      type="number"
+                      value={editedProfile.tradeValue}
+                      onChange={(e) => setEditedProfile({ ...editedProfile, tradeValue: parseFloat(e.target.value) || 0 })}
+                      className="col-span-2"
+                  />
+              </div>
+              <div className="grid grid-cols-3 items-center gap-4">
+                  <Label htmlFor="status" className="text-right">
+                      Status
+                  </Label>
+                  <div className="col-span-2 flex items-center space-x-2">
+                      <Switch
+                      id="status"
+                      checked={editedProfile.status === 'Online'}
+                      onCheckedChange={(checked) => setEditedProfile({ ...editedProfile, status: checked ? 'Online' : 'Offline' })}
+                      />
+                      <Label htmlFor="status" className={editedProfile.status === 'Online' ? 'text-emerald-400' : 'text-red-400'}>{editedProfile.status}</Label>
+                  </div>
+              </div>
           </div>
           <DialogFooter>
             <DialogClose asChild>
@@ -441,14 +389,96 @@ export default function DashboardPage() {
                 Cancelar
               </Button>
             </DialogClose>
-            <Button type="button" onClick={handleSaveChanges}>
+            <Button type="button" onClick={handleSaveProfile}>
               Salvar Alterações
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Trade Edit/Add Modal */}
+      <Dialog open={isTradeModalOpen} onOpenChange={setIsTradeModalOpen}>
+        <DialogContent className="sm:max-w-md">
+           <DialogHeader>
+            <DialogTitle>{editedTradeIndex !== null ? 'Editar Operação' : 'Adicionar Nova Operação'}</DialogTitle>
+          </DialogHeader>
+          {editedTrade && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                  <Label>Data / Hora</Label>
+                  <Input
+                      value={editedTrade.date}
+                      onChange={(e) => handleTradeInputChange('date', e.target.value)}
+                      placeholder="dd/mm/aa hh:mm"
+                  />
+              </div>
+              <div className="space-y-2">
+                  <Label>Ativo</Label>
+                   <Select
+                      value={editedTrade.asset}
+                      onValueChange={(value) => handleTradeInputChange("asset", value)}
+                  >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o ativo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {assetOptions.map(option => (
+                          <SelectItem key={option} value={option}>{option}</SelectItem>
+                        ))}
+                      </SelectContent>
+                  </Select>
+              </div>
+               <div className="space-y-2">
+                  <Label>Tipo</Label>
+                   <Select
+                      value={editedTrade.type}
+                      onValueChange={(value) => handleTradeInputChange("type", value)}
+                  >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Call">Call</SelectItem>
+                        <SelectItem value="Put">Put</SelectItem>
+                      </SelectContent>
+                  </Select>
+              </div>
+              <div className="space-y-2">
+                  <Label>Valor da Operação</Label>
+                  <Input
+                      type="number"
+                      value={editedTrade.amount}
+                      onChange={(e) => handleTradeInputChange('amount', parseFloat(e.target.value) || 0)}
+                  />
+              </div>
+               <div className="space-y-2">
+                  <Label>Resultado</Label>
+                  <div className="flex gap-2">
+                      <Button size="sm" className="flex-1 bg-emerald-500/80 hover:bg-emerald-500 text-white" onClick={() => handleResultButtonClick('win')}>Win</Button>
+                      <Button size="sm" className="flex-1 bg-red-500/80 hover:bg-red-500 text-white" onClick={() => handleResultButtonClick('loss')}>Loss</Button>
+                  </div>
+                  <Input
+                      value={editedTrade.result}
+                      onChange={(e) => handleTradeInputChange('result', e.target.value)}
+                      placeholder="+R$0,00"
+                      className="mt-2"
+                  />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Cancelar
+              </Button>
+            </DialogClose>
+            <Button type="button" onClick={handleSaveTrade}>
+              Salvar Operação
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
-
-    
