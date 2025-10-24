@@ -6,8 +6,10 @@ import type { Trade, TraderData } from "@/lib/data";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import {
   Table,
@@ -17,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -29,6 +32,8 @@ import {
   Edit,
   Trash2,
   PlusCircle,
+  MoreVertical,
+  Settings,
 } from "lucide-react";
 import {
   Dialog,
@@ -50,6 +55,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("pt-BR", {
@@ -156,106 +162,116 @@ export default function DashboardPage() {
 
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-4">
-            <User className="w-10 h-10 text-primary" />
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold font-headline">{name}</h1>
-              <div className="flex items-center gap-2">
-                <button onClick={handleOpenEditModal} className="group relative">
-                  <Badge
-                    variant={status === "Online" ? "default" : "destructive"}
-                    className={`border-none transition-all group-hover:ring-2 group-hover:ring-primary/50 ${
-                      status === "Online"
-                        ? "bg-emerald-500/20 text-emerald-400"
-                        : "bg-red-500/20 text-red-400"
-                    }`}
-                  >
-                    {status}
-                  </Badge>
-                  <div className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Edit className="w-3 h-3 text-primary"/>
-                  </div>
-                </button>
-              </div>
-            </div>
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-lg px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+          <div className="flex items-center gap-2">
+            <User className="w-6 h-6 text-primary" />
+            <h1 className="text-xl font-semibold">Dashboard do Trader</h1>
           </div>
-          <Button asChild variant="outline">
-            <Link href="/">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar à Página Inicial
-            </Link>
-          </Button>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-          {stats.map((stat, index) => (
-            <Card
-              key={stat.title}
-              className="animate-in fade-in slide-in-from-bottom-4"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {stat.title}
-                </CardTitle>
-                <stat.icon className={`h-5 w-5 ${stat.color}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <Card className="animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '600ms' }}>
-          <CardHeader>
-            <CardTitle>Histórico de Operações</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="relative w-full overflow-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Data/Hora</TableHead>
-                    <TableHead>Ativo</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead className="text-right">Valor</TableHead>
-                    <TableHead className="text-right">Resultado</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {history.slice(0, 10).map((trade, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="font-medium">{trade.date}</TableCell>
-                      <TableCell>{trade.asset}</TableCell>
-                      <TableCell>
-                        <Badge variant={trade.type === 'Call' ? 'default' : 'destructive'} className={`${trade.type === 'Call' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'} border-none`}>
-                            {trade.type}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {formatCurrency(trade.amount)}
-                      </TableCell>
-                      <TableCell
-                        className={`text-right font-semibold ${
-                          trade.result.startsWith("+")
-                            ? "text-emerald-500"
-                            : "text-red-500"
+          <div className="ml-auto flex items-center gap-2">
+            <Button asChild variant="outline" size="sm">
+              <Link href="/">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Página Inicial
+              </Link>
+            </Button>
+            <Button variant="default" size="sm" onClick={handleOpenEditModal}>
+              <Settings className="mr-2 h-4 w-4" />
+              Editar Dados
+            </Button>
+          </div>
+      </header>
+      <main className="p-4 sm:p-6 lg:p-8 grid gap-8 md:grid-cols-3">
+        <div className="md:col-span-1 flex flex-col gap-8">
+            <Card className="overflow-hidden">
+                <div className="bg-gradient-to-br from-primary/10 to-accent/10 h-24 relative">
+                    <button onClick={handleOpenEditModal} className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors">
+                        <MoreVertical size={20}/>
+                    </button>
+                </div>
+                <CardContent className="relative text-center p-6 pt-0">
+                    <Avatar className="w-24 h-24 mx-auto -mt-12 border-4 border-background">
+                        <AvatarImage src={`https://avatar.vercel.sh/${name}.png`} />
+                        <AvatarFallback>{name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <h2 className="text-2xl font-bold mt-4">{name}</h2>
+                    <Badge
+                        variant={status === "Online" ? "default" : "destructive"}
+                        className={`mt-2 border-none transition-all ${
+                        status === "Online"
+                            ? "bg-emerald-500/20 text-emerald-400"
+                            : "bg-red-500/20 text-red-400"
                         }`}
-                      >
-                        {trade.result}
-                      </TableCell>
+                    >
+                        {status}
+                    </Badge>
+                </CardContent>
+            </Card>
+        </div>
+
+        <div className="md:col-span-2 flex flex-col gap-8">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {stats.map((stat) => (
+              <Card key={stat.title}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {stat.title}
+                  </CardTitle>
+                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stat.value}</div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Histórico de Operações</CardTitle>
+              <CardDescription>As últimas 10 operações realizadas.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Data/Hora</TableHead>
+                      <TableHead>Ativo</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead className="text-right">Valor</TableHead>
+                      <TableHead className="text-right">Resultado</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                  </TableHeader>
+                  <TableBody>
+                    {history.slice(0, 10).map((trade, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">{trade.date}</TableCell>
+                        <TableCell>{trade.asset}</TableCell>
+                        <TableCell>
+                          <Badge variant={trade.type === 'Call' ? 'default' : 'destructive'} className={`${trade.type === 'Call' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'} border-none`}>
+                              {trade.type}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {formatCurrency(trade.amount)}
+                        </TableCell>
+                        <TableCell
+                          className={`text-right font-semibold ${
+                            trade.result.startsWith("+")
+                              ? "text-emerald-500"
+                              : "text-red-500"
+                          }`}
+                        >
+                          {trade.result}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
       
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent className="max-w-4xl">
@@ -266,7 +282,6 @@ export default function DashboardPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 py-4">
-            {/* Coluna de Dados Gerais */}
             <div className="space-y-4 pr-4 border-r border-border">
                 <h3 className="text-lg font-medium text-foreground mb-4">Informações Gerais</h3>
                 <div className="grid grid-cols-3 items-center gap-4">
@@ -338,7 +353,7 @@ export default function DashboardPage() {
                     </div>
                 </div>
             </div>
-            {/* Coluna do Histórico de Operações */}
+            
             <div className="space-y-4">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-medium text-foreground">Histórico de Operações</h3>
@@ -435,3 +450,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
