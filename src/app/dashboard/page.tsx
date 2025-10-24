@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { traderData as initialTraderData } from "@/lib/data";
-import type { TraderData } from "@/lib/data";
+import type { Trade, TraderData } from "@/lib/data";
 import {
   Card,
   CardContent,
@@ -32,6 +32,8 @@ import {
   TrendingUp,
   Sparkles,
   Edit,
+  Trash2,
+  PlusCircle,
 } from "lucide-react";
 import PerformanceChart from "@/components/performance-chart";
 import { parseTradeResult } from "@/lib/utils";
@@ -48,6 +50,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("pt-BR", {
@@ -124,6 +128,29 @@ export default function DashboardPage() {
     setTraderData(editedData);
     setIsEditModalOpen(false);
   };
+
+  const handleHistoryChange = (index: number, field: keyof Trade, value: string | number) => {
+    const newHistory = [...editedData.history];
+    (newHistory[index] as any)[field] = value;
+    setEditedData({ ...editedData, history: newHistory });
+  };
+  
+  const handleRemoveTrade = (index: number) => {
+    const newHistory = editedData.history.filter((_, i) => i !== index);
+    setEditedData({ ...editedData, history: newHistory });
+  };
+
+  const handleAddTrade = () => {
+    const newTrade: Trade = {
+        date: new Intl.DateTimeFormat('pt-BR', { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date()),
+        asset: 'Novo Ativo',
+        amount: editedData.tradeValue,
+        result: '+R$0,00'
+    };
+    const newHistory = [newTrade, ...editedData.history];
+    setEditedData({ ...editedData, history: newHistory });
+  };
+
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 sm:p-6 lg:p-8">
@@ -259,73 +286,125 @@ export default function DashboardPage() {
       </div>
       
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>Editar Dados do Trader</DialogTitle>
             <DialogDescription>
               Altere as informações abaixo e clique em salvar.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Nome
-              </Label>
-              <Input
-                id="name"
-                value={editedData.name}
-                onChange={(e) => setEditedData({ ...editedData, name: e.target.value })}
-                className="col-span-3"
-              />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
+            <div className="space-y-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">
+                        Nome
+                    </Label>
+                    <Input
+                        id="name"
+                        value={editedData.name}
+                        onChange={(e) => setEditedData({ ...editedData, name: e.target.value })}
+                        className="col-span-3"
+                    />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="initialBalance" className="text-right">
+                        Saldo Inicial
+                    </Label>
+                    <Input
+                        id="initialBalance"
+                        type="number"
+                        value={editedData.initialBalance}
+                        onChange={(e) => setEditedData({ ...editedData, initialBalance: parseFloat(e.target.value) || 0 })}
+                        className="col-span-3"
+                    />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="currentBalance" className="text-right">
+                        Saldo Atual
+                    </Label>
+                    <Input
+                        id="currentBalance"
+                        type="number"
+                        value={editedData.currentBalance}
+                        onChange={(e) => setEditedData({ ...editedData, currentBalance: parseFloat(e.target.value) || 0 })}
+                        className="col-span-3"
+                    />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="tradeValue" className="text-right">
+                        Valor/Op.
+                    </Label>
+                    <Input
+                        id="tradeValue"
+                        type="number"
+                        value={editedData.tradeValue}
+                        onChange={(e) => setEditedData({ ...editedData, tradeValue: parseFloat(e.target.value) || 0 })}
+                        className="col-span-3"
+                    />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="status" className="text-right">
+                        Status
+                    </Label>
+                    <div className="col-span-3 flex items-center space-x-2">
+                        <Switch
+                        id="status"
+                        checked={editedData.status === 'Online'}
+                        onCheckedChange={(checked) => setEditedData({ ...editedData, status: checked ? 'Online' : 'Offline' })}
+                        />
+                        <Label htmlFor="status">{editedData.status}</Label>
+                    </div>
+                </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="initialBalance" className="text-right">
-                Saldo Inicial
-              </Label>
-              <Input
-                id="initialBalance"
-                type="number"
-                value={editedData.initialBalance}
-                onChange={(e) => setEditedData({ ...editedData, initialBalance: parseFloat(e.target.value) || 0 })}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="currentBalance" className="text-right">
-                Saldo Atual
-              </Label>
-              <Input
-                id="currentBalance"
-                type="number"
-                value={editedData.currentBalance}
-                onChange={(e) => setEditedData({ ...editedData, currentBalance: parseFloat(e.target.value) || 0 })}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="tradeValue" className="text-right">
-                Valor/Operação
-              </Label>
-              <Input
-                id="tradeValue"
-                type="number"
-                value={editedData.tradeValue}
-                onChange={(e) => setEditedData({ ...editedData, tradeValue: parseFloat(e.target.value) || 0 })}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-               <Label htmlFor="status" className="text-right">
-                Status
-              </Label>
-              <div className="col-span-3 flex items-center space-x-2">
-                <Switch
-                  id="status"
-                  checked={editedData.status === 'Online'}
-                  onCheckedChange={(checked) => setEditedData({ ...editedData, status: checked ? 'Online' : 'Offline' })}
-                />
-                 <Label htmlFor="status">{editedData.status}</Label>
-              </div>
+            <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-medium">Histórico de Operações</h3>
+                    <Button variant="outline" size="sm" onClick={handleAddTrade}>
+                        <PlusCircle className="mr-2 h-4 w-4"/> Adicionar
+                    </Button>
+                </div>
+                <Separator />
+                <ScrollArea className="h-64 pr-4">
+                <div className="space-y-4">
+                    {editedData.history.map((trade, index) => (
+                    <div key={index} className="grid grid-cols-12 gap-2 items-center">
+                        <Input
+                            value={trade.date}
+                            onChange={(e) => handleHistoryChange(index, 'date', e.target.value)}
+                            className="col-span-3 text-xs"
+                            placeholder="Data"
+                        />
+                        <Input
+                            value={trade.asset}
+                            onChange={(e) => handleHistoryChange(index, 'asset', e.target.value)}
+                            className="col-span-3 text-xs"
+                            placeholder="Ativo"
+                        />
+                        <Input
+                            value={trade.result}
+                            onChange={(e) => handleHistoryChange(index, 'result', e.target.value)}
+                            className="col-span-3 text-xs"
+                            placeholder="Resultado"
+                        />
+                         <Input
+                            type="number"
+                            value={trade.amount}
+                            onChange={(e) => handleHistoryChange(index, 'amount', parseFloat(e.target.value) || 0)}
+                            className="col-span-2 text-xs"
+                            placeholder="Valor"
+                        />
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="col-span-1 h-8 w-8 text-muted-foreground"
+                            onClick={() => handleRemoveTrade(index)}
+                        >
+                            <Trash2 className="h-4 w-4"/>
+                        </Button>
+                    </div>
+                    ))}
+                </div>
+                </ScrollArea>
             </div>
           </div>
           <DialogFooter>
