@@ -66,6 +66,24 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
+const assetOptions = [
+  "EUR/USD",
+  "EUR/JPY",
+  "AUD/JPY",
+  "USD/JPY",
+  "EUR/USD (OTC)",
+  "EUR/JPY (OTC)",
+  "AUD/JPY (OTC)",
+  "USD/JPY (OTC)",
+  "BTC/USDT",
+  "ETH/USDT",
+  "GBP/USD",
+  "AUD/CAD",
+  "XAU/USD",
+  "SPX500",
+  "Novo Ativo",
+];
+
 export default function DashboardPage() {
   const [traderData, setTraderData] = useState<TraderData>(initialTraderData);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -400,12 +418,19 @@ export default function DashboardPage() {
                                 className="text-xs h-8"
                                 placeholder="Data/Hora"
                             />
-                            <Input
+                            <Select
                                 value={trade.asset}
-                                onChange={(e) => handleHistoryChange(index, 'asset', e.target.value)}
-                                className="text-xs h-8"
-                                placeholder="Ativo"
-                            />
+                                onValueChange={(value) => handleHistoryChange(index, "asset", value)}
+                            >
+                                <SelectTrigger className="text-xs h-8">
+                                <SelectValue placeholder="Ativo" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {assetOptions.map(option => (
+                                    <SelectItem key={option} value={option}>{option}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                            </Select>
                             <Select
                                 value={trade.type}
                                 onValueChange={(value) => handleHistoryChange(index, "type", value)}
