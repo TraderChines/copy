@@ -279,6 +279,18 @@ export default function DashboardPage() {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="initialBalance" className="text-right">
+                Saldo Inicial
+              </Label>
+              <Input
+                id="initialBalance"
+                type="number"
+                value={editedData.initialBalance}
+                onChange={(e) => setEditedData({ ...editedData, initialBalance: parseFloat(e.target.value) || 0 })}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="currentBalance" className="text-right">
                 Saldo Atual
               </Label>
@@ -287,6 +299,18 @@ export default function DashboardPage() {
                 type="number"
                 value={editedData.currentBalance}
                 onChange={(e) => setEditedData({ ...editedData, currentBalance: parseFloat(e.target.value) || 0 })}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="tradeValue" className="text-right">
+                Valor/Operação
+              </Label>
+              <Input
+                id="tradeValue"
+                type="number"
+                value={editedData.tradeValue}
+                onChange={(e) => setEditedData({ ...editedData, tradeValue: parseFloat(e.target.value) || 0 })}
                 className="col-span-3"
               />
             </div>
