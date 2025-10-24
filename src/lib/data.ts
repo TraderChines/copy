@@ -5,7 +5,7 @@ export interface Trade {
   result: string;
 }
 
-interface TraderData {
+export interface TraderData {
   name: string;
   initialBalance: number;
   currentBalance: number;

@@ -1,4 +1,8 @@
-import { traderData } from "@/lib/data";
+"use client";
+
+import { useState } from "react";
+import { traderData as initialTraderData } from "@/lib/data";
+import type { TraderData } from "@/lib/data";
 import {
   Card,
   CardContent,
@@ -27,10 +31,23 @@ import {
   XCircle,
   TrendingUp,
   Sparkles,
+  Edit,
 } from "lucide-react";
 import PerformanceChart from "@/components/performance-chart";
 import { parseTradeResult } from "@/lib/utils";
 import AiAnalysis from "@/components/ai-analysis";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("pt-BR", {
@@ -40,6 +57,10 @@ const formatCurrency = (value: number) => {
 };
 
 export default function DashboardPage() {
+  const [traderData, setTraderData] = useState<TraderData>(initialTraderData);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editedData, setEditedData] = useState(traderData);
+
   const {
     name,
     initialBalance,
@@ -94,6 +115,15 @@ export default function DashboardPage() {
       return acc;
     }, [] as { name: string; profit: number; cumulativeProfit: number }[]);
 
+  const handleOpenEditModal = () => {
+    setEditedData(traderData);
+    setIsEditModalOpen(true);
+  };
+  
+  const handleSaveChanges = () => {
+    setTraderData(editedData);
+    setIsEditModalOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 sm:p-6 lg:p-8">
@@ -104,16 +134,21 @@ export default function DashboardPage() {
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold font-headline">{name}</h1>
               <div className="flex items-center gap-2">
-                <Badge
-                  variant={status === "Online" ? "default" : "destructive"}
-                  className={`border-none ${
-                    status === "Online"
-                      ? "bg-emerald-500/20 text-emerald-400"
-                      : "bg-red-500/20 text-red-400"
-                  }`}
-                >
-                  {status}
-                </Badge>
+                <button onClick={handleOpenEditModal} className="group relative">
+                  <Badge
+                    variant={status === "Online" ? "default" : "destructive"}
+                    className={`border-none transition-all group-hover:ring-2 group-hover:ring-primary/50 ${
+                      status === "Online"
+                        ? "bg-emerald-500/20 text-emerald-400"
+                        : "bg-red-500/20 text-red-400"
+                    }`}
+                  >
+                    {status}
+                  </Badge>
+                  <div className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Edit className="w-3 h-3 text-primary"/>
+                  </div>
+                </button>
                 {status === "Online" ? (
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 ) : (
@@ -222,6 +257,65 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+      
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Dados do Trader</DialogTitle>
+            <DialogDescription>
+              Altere as informações abaixo e clique em salvar.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Nome
+              </Label>
+              <Input
+                id="name"
+                value={editedData.name}
+                onChange={(e) => setEditedData({ ...editedData, name: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="currentBalance" className="text-right">
+                Saldo Atual
+              </Label>
+              <Input
+                id="currentBalance"
+                type="number"
+                value={editedData.currentBalance}
+                onChange={(e) => setEditedData({ ...editedData, currentBalance: parseFloat(e.target.value) || 0 })}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+               <Label htmlFor="status" className="text-right">
+                Status
+              </Label>
+              <div className="col-span-3 flex items-center space-x-2">
+                <Switch
+                  id="status"
+                  checked={editedData.status === 'Online'}
+                  onCheckedChange={(checked) => setEditedData({ ...editedData, status: checked ? 'Online' : 'Offline' })}
+                />
+                 <Label htmlFor="status">{editedData.status}</Label>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Cancelar
+              </Button>
+            </DialogClose>
+            <Button type="button" onClick={handleSaveChanges}>
+              Salvar alterações
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
