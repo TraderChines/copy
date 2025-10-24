@@ -30,16 +30,12 @@ import {
   CheckCircle2,
   XCircle,
   TrendingUp,
-  Sparkles,
   Edit,
   Trash2,
   PlusCircle,
-  Minus,
-  Plus
 } from "lucide-react";
 import PerformanceChart from "@/components/performance-chart";
 import { parseTradeResult } from "@/lib/utils";
-import AiAnalysis from "@/components/ai-analysis";
 import {
   Dialog,
   DialogContent,
@@ -241,8 +237,8 @@ export default function DashboardPage() {
           ))}
         </div>
         
-        <div className="grid gap-8 lg:grid-cols-3 mb-8">
-            <Card className="lg:col-span-2 animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '400ms' }}>
+        <div className="grid gap-8 mb-8">
+            <Card className="animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '400ms' }}>
                 <CardHeader>
                 <CardTitle>Evolução do Lucro</CardTitle>
                 <CardDescription>
@@ -251,20 +247,6 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                     <PerformanceChart data={chartData} />
-                </CardContent>
-            </Card>
-            <Card className="animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '500ms' }}>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Sparkles className="text-primary w-5 h-5" />
-                        Análise de IA
-                    </CardTitle>
-                    <CardDescription>
-                        Peça à IA para analisar o desempenho do trader.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <AiAnalysis history={history} />
                 </CardContent>
             </Card>
         </div>
@@ -498,5 +480,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
