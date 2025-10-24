@@ -67,21 +67,14 @@ const formatCurrency = (value: number) => {
 };
 
 const assetOptions = [
-  "EUR/USD",
-  "EUR/JPY",
   "AUD/JPY",
-  "USD/JPY",
-  "EUR/USD (OTC)",
-  "EUR/JPY (OTC)",
   "AUD/JPY (OTC)",
+  "EUR/JPY",
+  "EUR/JPY (OTC)",
+  "EUR/USD",
+  "EUR/USD (OTC)",
+  "USD/JPY",
   "USD/JPY (OTC)",
-  "BTC/USDT",
-  "ETH/USDT",
-  "GBP/USD",
-  "AUD/CAD",
-  "XAU/USD",
-  "SPX500",
-  "Novo Ativo",
 ];
 
 export default function DashboardPage() {
