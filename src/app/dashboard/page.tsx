@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { traderData as initialTraderData } from "@/lib/data";
 import type { Trade, TraderData } from "@/lib/data";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
   CardFooter,
@@ -32,7 +31,6 @@ import {
   Edit,
   Trash2,
   PlusCircle,
-  MoreVertical,
   Settings,
 } from "lucide-react";
 import {
@@ -90,6 +88,27 @@ export default function DashboardPage() {
   const [editedProfile, setEditedProfile] = useState(traderData);
   const [editedTrade, setEditedTrade] = useState<Trade | null>(null);
   const [editedTradeIndex, setEditedTradeIndex] = useState<number | null>(null);
+
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [clickCount, setClickCount] = useState(0);
+
+  useEffect(() => {
+    if (clickCount >= 5) {
+      setIsEditMode(true);
+      setClickCount(0); // Reset count after activation
+    }
+
+    const timer = setTimeout(() => {
+      setClickCount(0);
+    }, 1500); // Reset if clicks are too spaced out
+
+    return () => clearTimeout(timer);
+  }, [clickCount]);
+
+  const handleProfileCardClick = () => {
+    setClickCount(prev => prev + 1);
+  };
+
 
   const {
     name,
@@ -197,8 +216,6 @@ export default function DashboardPage() {
     handleTradeInputChange('result', resultString);
   };
 
-  const editedTotalProfit = editedProfile.currentBalance - editedProfile.initialBalance;
-
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-lg px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
@@ -207,6 +224,11 @@ export default function DashboardPage() {
             <h1 className="text-xl font-semibold">Dashboard do Trader</h1>
           </div>
           <div className="ml-auto flex items-center gap-2">
+             {isEditMode && (
+              <Button variant="destructive" size="sm" onClick={() => setIsEditMode(false)}>
+                Sair do Modo de Edição
+              </Button>
+            )}
             <Button asChild variant="outline" size="sm">
               <Link href="/">
                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -217,11 +239,13 @@ export default function DashboardPage() {
       </header>
       <main className="p-4 sm:p-6 lg:p-8 grid gap-8 md:grid-cols-3">
         <div className="md:col-span-1 flex flex-col gap-8">
-            <Card className="overflow-hidden">
+            <Card className="overflow-hidden" onClick={handleProfileCardClick}>
                 <div className="bg-gradient-to-br from-primary/10 to-accent/10 h-24 relative">
-                    <Button variant="ghost" size="icon" onClick={handleOpenProfileModal} className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors">
-                        <Settings size={18}/>
-                    </Button>
+                    {isEditMode && (
+                      <Button variant="ghost" size="icon" onClick={handleOpenProfileModal} className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors">
+                          <Settings size={18}/>
+                      </Button>
+                    )}
                 </div>
                 <CardContent className="relative text-center p-6 pt-0">
                     <Avatar className="w-24 h-24 mx-auto -mt-12 border-4 border-background">
@@ -261,15 +285,17 @@ export default function DashboardPage() {
           </div>
 
           <Card>
-            <CardHeader className="flex justify-between items-center">
+            <CardHeader className="flex flex-row justify-between items-center">
               <div>
                 <CardTitle>Histórico de Operações</CardTitle>
                 <CardDescription>As últimas operações realizadas.</CardDescription>
               </div>
-              <Button size="sm" onClick={() => handleOpenTradeModal(null, null)}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Adicionar Operação
-              </Button>
+              {isEditMode && (
+                <Button size="sm" onClick={() => handleOpenTradeModal(null, null)}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Adicionar Operação
+                </Button>
+              )}
             </CardHeader>
             <CardContent>
               <Table>
@@ -280,7 +306,7 @@ export default function DashboardPage() {
                       <TableHead>Tipo</TableHead>
                       <TableHead className="text-right">Valor</TableHead>
                       <TableHead className="text-right">Resultado</TableHead>
-                      <TableHead className="text-right">Ações</TableHead>
+                      {isEditMode && <TableHead className="text-right">Ações</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -305,16 +331,18 @@ export default function DashboardPage() {
                         >
                           {trade.result}
                         </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex gap-2 justify-end">
-                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenTradeModal(trade, index)}>
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-400" onClick={() => handleRemoveTrade(index)}>
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                          </div>
-                        </TableCell>
+                        {isEditMode && (
+                          <TableCell className="text-right">
+                            <div className="flex gap-2 justify-end">
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenTradeModal(trade, index)}>
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-400" onClick={() => handleRemoveTrade(index)}>
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </div>
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))}
                   </TableBody>
