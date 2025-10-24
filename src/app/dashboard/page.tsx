@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
   CardFooter,
+  CardDescription,
 } from "@/components/ui/card";
 import {
   Table,
@@ -38,7 +39,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
@@ -510,3 +510,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
