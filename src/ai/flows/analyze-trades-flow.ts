@@ -13,6 +13,7 @@ import { z } from 'genkit';
 const TradeSchema = z.object({
   date: z.string(),
   asset: z.string(),
+  type: z.enum(["Call", "Put"]),
   amount: z.number(),
   result: z.string(),
 });
@@ -41,7 +42,7 @@ const prompt = ai.definePrompt({
   
   O histórico de operações é o seguinte:
   {{#each history}}
-  - Data: {{date}}, Ativo: {{asset}}, Resultado: {{result}}
+  - Data: {{date}}, Ativo: {{asset}}, Tipo: {{type}}, Resultado: {{result}}
   {{/each}}
   
   Gere um resumo da análise em português e formate-o em markdown.`,

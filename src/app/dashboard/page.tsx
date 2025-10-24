@@ -51,7 +51,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("pt-BR", {
@@ -125,8 +131,6 @@ export default function DashboardPage() {
   };
   
   const handleSaveChanges = () => {
-    // Recalcula o lucro total com base nos dados editados
-    const newTotalProfit = editedData.currentBalance - editedData.initialBalance;
     setTraderData({ ...editedData });
     setIsEditModalOpen(false);
   };
@@ -146,6 +150,7 @@ export default function DashboardPage() {
     const newTrade: Trade = {
         date: new Intl.DateTimeFormat('pt-BR', { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date()),
         asset: 'Novo Ativo',
+        type: "Call",
         amount: editedData.tradeValue,
         result: '+R$0,00'
     };
@@ -153,7 +158,6 @@ export default function DashboardPage() {
     setEditedData({ ...editedData, history: newHistory });
   };
 
-  // Recalcula o lucro total em tempo real no modal
   const editedTotalProfit = editedData.currentBalance - editedData.initialBalance;
 
 
@@ -260,6 +264,7 @@ export default function DashboardPage() {
                   <TableRow>
                     <TableHead>Data/Hora</TableHead>
                     <TableHead>Ativo</TableHead>
+                    <TableHead>Tipo</TableHead>
                     <TableHead className="text-right">Valor</TableHead>
                     <TableHead className="text-right">Resultado</TableHead>
                   </TableRow>
@@ -269,6 +274,11 @@ export default function DashboardPage() {
                     <TableRow key={index}>
                       <TableCell className="font-medium">{trade.date}</TableCell>
                       <TableCell>{trade.asset}</TableCell>
+                      <TableCell>
+                        <Badge variant={trade.type === 'Call' ? 'default' : 'destructive'} className={`${trade.type === 'Call' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'} border-none`}>
+                            {trade.type}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="text-right">
                         {formatCurrency(trade.amount)}
                       </TableCell>
@@ -382,7 +392,7 @@ export default function DashboardPage() {
                 <ScrollArea className="h-80 pr-4">
                 <div className="space-y-3">
                     {editedData.history.map((trade, index) => (
-                    <div key={index} className="flex gap-2 items-center p-2 rounded-md border bg-muted/20">
+                    <div key={index} className="flex gap-2 items-start p-2 rounded-md border bg-muted/20">
                         <div className="flex-1 grid grid-cols-2 gap-2">
                             <Input
                                 value={trade.date}
@@ -396,6 +406,18 @@ export default function DashboardPage() {
                                 className="text-xs h-8"
                                 placeholder="Ativo"
                             />
+                            <Select
+                                value={trade.type}
+                                onValueChange={(value) => handleHistoryChange(index, "type", value)}
+                            >
+                                <SelectTrigger className="text-xs h-8">
+                                <SelectValue placeholder="Tipo" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                <SelectItem value="Call">Call</SelectItem>
+                                <SelectItem value="Put">Put</SelectItem>
+                                </SelectContent>
+                            </Select>
                             <Input
                                 type="number"
                                 value={trade.amount}
@@ -406,14 +428,14 @@ export default function DashboardPage() {
                              <Input
                                 value={trade.result}
                                 onChange={(e) => handleHistoryChange(index, 'result', e.target.value)}
-                                className="text-xs h-8"
+                                className="text-xs h-8 col-span-2"
                                 placeholder="Resultado"
                             />
                         </div>
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:bg-destructive/20 hover:text-destructive"
+                            className="h-8 w-8 text-muted-foreground hover:bg-destructive/20 hover:text-destructive flex-shrink-0"
                             onClick={() => handleRemoveTrade(index)}
                         >
                             <Trash2 className="h-4 w-4"/>
@@ -439,5 +461,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
