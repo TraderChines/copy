@@ -8,7 +8,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import {
   Table,
@@ -26,9 +25,6 @@ import {
   User,
   Wallet,
   CircleDollarSign,
-  BarChart,
-  CheckCircle2,
-  XCircle,
   TrendingUp,
   Edit,
   Trash2,
@@ -107,7 +103,7 @@ export default function DashboardPage() {
     {
       title: "Lucro Total",
       value: formatCurrency(totalProfit),
-      icon: BarChart,
+      icon: TrendingUp,
       color: totalProfit > 0 ? "text-emerald-400" : "text-red-400",
     },
     {
@@ -201,11 +197,6 @@ export default function DashboardPage() {
                     <Edit className="w-3 h-3 text-primary"/>
                   </div>
                 </button>
-                {status === "Online" ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                ) : (
-                  <XCircle className="w-4 h-4 text-red-400" />
-                )}
               </div>
             </div>
           </div>
@@ -241,9 +232,6 @@ export default function DashboardPage() {
             <Card className="animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '400ms' }}>
                 <CardHeader>
                 <CardTitle>Evolução do Lucro</CardTitle>
-                <CardDescription>
-                    Gráfico do lucro acumulado ao longo do tempo.
-                </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <PerformanceChart data={chartData} />
@@ -255,9 +243,6 @@ export default function DashboardPage() {
         <Card className="animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: '600ms' }}>
           <CardHeader>
             <CardTitle>Histórico de Operações</CardTitle>
-            <CardDescription>
-              As últimas 10 operações realizadas.
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="relative w-full overflow-auto">
@@ -480,3 +465,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
