@@ -32,6 +32,7 @@ import {
   Trash2,
   PlusCircle,
   Settings,
+  Target,
 } from "lucide-react";
 import {
   Dialog,
@@ -120,6 +121,10 @@ export default function DashboardPage() {
   } = traderData;
 
   const totalProfit = currentBalance - initialBalance;
+  
+  const wins = history.filter(trade => trade.result.startsWith('+')).length;
+  const totalTrades = history.length;
+  const winRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
 
   const stats = [
     {
@@ -145,6 +150,12 @@ export default function DashboardPage() {
       value: formatCurrency(tradeValue),
       icon: CircleDollarSign,
       color: "text-amber-400",
+    },
+     {
+      title: "Assertividade",
+      value: `${winRate.toFixed(1)}%`,
+      icon: Target,
+      color: "text-rose-400",
     },
   ];
 
@@ -268,7 +279,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="md:col-span-2 flex flex-col gap-8">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {stats.map((stat) => (
               <Card key={stat.title}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -510,5 +521,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
