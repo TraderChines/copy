@@ -191,7 +191,7 @@ export default function DashboardPage() {
     setEditedTradeIndex(index);
     if(trade) {
         const numericResult = String(Math.abs(parseTradeResult(trade.result)));
-        setRawResult(numericResult.replace('.',','));
+        setRawResult(numericResult);
     } else {
         setRawResult("");
     }
@@ -254,7 +254,7 @@ export default function DashboardPage() {
     const resultSign = type === 'win' ? '+' : '-';
     
     setEditedTrade({ ...editedTrade, result: `${resultSign}R$` }); 
-    setRawResult(resultValue.toFixed(2).replace('.', ','));
+    setRawResult(String(resultValue.toFixed(2)));
   };
 
   return (
@@ -531,10 +531,10 @@ export default function DashboardPage() {
                         {editedTrade.result.startsWith('-') ? '-R$' : '+R$'}
                     </span>
                     <Input
-                        type="text"
+                        type="number"
                         value={rawResult}
-                        onChange={(e) => setRawResult(e.target.value.replace(/[^0-9,]/g, ''))}
-                        placeholder="0,00"
+                        onChange={(e) => setRawResult(e.target.value)}
+                        placeholder="0.00"
                         className="pl-12 text-right"
                     />
                   </div>
