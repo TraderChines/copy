@@ -200,7 +200,7 @@ export default function DashboardPage() {
     if(trade) {
         // Remove currency symbols and formatting for editing
         const numericResult = String(Math.abs(parseTradeResult(trade.result)));
-        setRawResult(numericResult.replace('.',','));
+        setRawResult(numericResult);
     } else {
         setRawResult("");
     }
@@ -258,12 +258,11 @@ export default function DashboardPage() {
   
   const handleResultButtonClick = (type: 'win' | 'loss') => {
     if (!editedTrade) return;
-
-    const resultValue = type === 'win' ? editedTrade.amount * payout : editedTrade.amount;
+    const amount = editedTrade.amount || 0;
+    const resultValue = type === 'win' ? amount * payout : amount;
     const resultSign = type === 'win' ? '+' : '-';
-    
-    setEditedTrade({ ...editedTrade, result: `${resultSign}R$` }); 
-    setRawResult(String(resultValue.toFixed(2)).replace('.', ','));
+    setEditedTrade({ ...editedTrade, result: `${resultSign}R$` });
+    setRawResult(resultValue.toFixed(2).replace('.', ','));
   };
 
   return (

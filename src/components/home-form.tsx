@@ -20,21 +20,18 @@ export default function HomeForm() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (userId.length < 7) return;
-
+  const handleSubmit = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    if (userId.length < 7) {
+      e.preventDefault();
+      return;
+    }
     setLoading(true);
-    // Simulate verification
-    setTimeout(() => {
-      router.push("/dashboard");
-    }, 1500);
   };
 
   const isButtonDisabled = loading || userId.length < 7;
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
       <Input
         type="text"
         placeholder="Digite seu ID da corretora"
@@ -46,23 +43,27 @@ export default function HomeForm() {
         minLength={7}
         pattern="\d*"
       />
-      <Button
-        type="submit"
-        disabled={isButtonDisabled}
-        className="w-full font-bold bg-gradient-to-r from-accent to-primary text-white"
-      >
-        {loading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Verificando...
-          </>
-        ) : (
-          <>
-            Enviar e ver painel
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </>
-        )}
-      </Button>
+      <Link href="/dashboard" passHref legacyBehavior>
+        <a onClick={handleSubmit} aria-disabled={isButtonDisabled}>
+          <Button
+            type="submit"
+            disabled={isButtonDisabled}
+            className="w-full font-bold bg-gradient-to-r from-accent to-primary text-white"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Verificando...
+              </>
+            ) : (
+              <>
+                Enviar e ver painel
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </>
+            )}
+          </Button>
+        </a>
+      </Link>
     </form>
   );
 }
