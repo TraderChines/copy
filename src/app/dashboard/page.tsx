@@ -7,6 +7,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
 import {
   Table,
@@ -235,7 +236,7 @@ export default function DashboardPage() {
   const handleResultButtonClick = (type: 'win' | 'loss') => {
     if (!editedTrade) return;
     const resultValue = editedTrade.amount * payout;
-    const formattedResult = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(resultValue);
+    const formattedResult = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(resultValue).replace('R$', '').trim();
     const resultString = `${type === 'win' ? '+' : '-'}R$${formattedResult}`;
     handleTradeInputChange('result', resultString);
   };
@@ -249,7 +250,7 @@ export default function DashboardPage() {
     const numericValue = inputValue.replace(/[^0-9,]/g, '').replace(',', '.');
     const value = parseFloat(numericValue) || 0;
 
-    const formattedResult = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(value);
+    const formattedResult = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value).replace('R$', '').trim();
     
     let finalSign = existingSign;
     if (inputValue.startsWith('+')) {
@@ -335,7 +336,7 @@ export default function DashboardPage() {
             <CardHeader className="flex flex-row justify-between items-center">
               <div>
                 <CardTitle>Histórico de Operações</CardTitle>
-                <DialogDescription>As últimas operações realizadas.</DialogDescription>
+                <CardDescription>As últimas operações realizadas.</CardDescription>
               </div>
               {isEditMode && (
                 <Button size="sm" onClick={() => handleOpenTradeModal(null, null)}>
@@ -538,10 +539,10 @@ export default function DashboardPage() {
                     </span>
                     <Input
                         type="text"
-                        value={String(Math.abs(parseTradeResult(editedTrade.result))).replace('.',',')}
+                        value={new Intl.NumberFormat('pt-BR', {minimumFractionDigits: 2}).format(Math.abs(parseTradeResult(editedTrade.result)))}
                         onChange={(e) => handleResultInputChange(e.target.value)}
                         placeholder="0,00"
-                        className="pl-10 text-right"
+                        className="pl-12 text-right"
                     />
                   </div>
               </div>
@@ -563,5 +564,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
