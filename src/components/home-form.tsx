@@ -11,9 +11,17 @@ export default function HomeForm() {
   const [userId, setUserId] = useState("");
   const router = useRouter();
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow only numbers
+    if (/^\d*$/.test(value)) {
+      setUserId(value);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!userId) return;
+    if (userId.length < 7) return;
 
     setLoading(true);
     setTimeout(() => {
@@ -21,20 +29,24 @@ export default function HomeForm() {
     }, 2000);
   };
 
+  const isButtonDisabled = loading || userId.length < 7;
+
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <Input
         type="text"
         placeholder="Digite seu ID da corretora"
         value={userId}
-        onChange={(e) => setUserId(e.target.value)}
+        onChange={handleInputChange}
         disabled={loading}
         required
         aria-label="ID da Corretora"
+        minLength={7}
+        pattern="\d*"
       />
       <Button
         type="submit"
-        disabled={loading || !userId}
+        disabled={isButtonDisabled}
         className="w-full font-bold bg-gradient-to-r from-accent to-primary text-white"
       >
         {loading ? (
