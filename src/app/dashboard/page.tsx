@@ -8,7 +8,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import {
   Table,
@@ -63,14 +62,9 @@ const formatCurrency = (value: number) => {
 };
 
 const assetOptions = [
-  "AUD/JPY",
-  "AUD/JPY (OTC)",
-  "EUR/JPY",
-  "EUR/JPY (OTC)",
-  "EUR/USD",
-  "EUR/USD (OTC)",
-  "USD/JPY",
-  "USD/JPY (OTC)",
+    "AUD/JPY",
+    "EUR/JPY",
+    "EUR/USD",
 ];
 
 const emptyTrade: Trade = {
@@ -82,7 +76,25 @@ const emptyTrade: Trade = {
 };
 
 export default function DashboardPage() {
-  const [traderData, setTraderData] = useState<TraderData>(initialTraderData);
+  const [traderData, setTraderData] = useState<TraderData>({
+    name: "Trader Chinês",
+    initialBalance: 1177.78,
+    currentBalance: 30905.91,
+    tradeValue: 1500,
+    status: "Online",
+    history: [
+      { date: "24/10 13:57", asset: "EUR/USD", type: "Put", amount: 1500, result: "+R$1,275.00" },
+      { date: "23/10 14:49", asset: "EUR/USD", type: "Put", amount: 1500, result: "+R$1,305.00" },
+      { date: "22/10 15:09", asset: "EUR/JPY", type: "Put", amount: 4500, result: "-R$4,500.00" },
+      { date: "21/10 16:05", asset: "EUR/USD", type: "Put", amount: 1500, result: "-R$1,500.00" },
+      { date: "20/10 13:22", asset: "EUR/JPY", type: "Put", amount: 10500, result: "+R$9,240.00" },
+      { date: "20/10 03:00", asset: "EUR/JPY", type: "Put", amount: 4497, result: "+R$1,139.24" },
+      { date: "20/10 02:56", asset: "EUR/JPY", type: "Put", amount: 7495, result: "+R$6,595.60" },
+      { date: "17/10 13:17", asset: "EUR/USD", type: "Put", amount: 4500, result: "+R$1,140.00" },
+      { date: "16/10 12:45", asset: "EUR/JPY", type: "Call", amount: 4500, result: "+R$3,960.00" },
+      { date: "14/10 14:05", asset: "AUD/JPY", type: "Call", amount: 1500, result: "+R$1,335.00" },
+    ],
+  });
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isTradeModalOpen, setIsTradeModalOpen] = useState(false);
   
@@ -227,6 +239,14 @@ export default function DashboardPage() {
     const resultString = `${type === 'win' ? '+' : '-'}R$${resultValue.toFixed(2).replace('.', ',')}`;
     handleTradeInputChange('result', resultString);
   };
+  
+  const handleResultInputChange = (inputValue: string) => {
+    if (!editedTrade) return;
+    const sign = parseTradeResult(editedTrade.result) >= 0 ? '+' : '-';
+    const numValue = parseFloat(inputValue.replace(',', '.')) || 0;
+    const resultString = `${sign}R$${numValue.toFixed(2).replace('.', ',')}`;
+    handleTradeInputChange('result', resultString);
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -503,12 +523,8 @@ export default function DashboardPage() {
                     </span>
                     <Input
                         type="number"
-                        value={Math.abs(parseTradeResult(editedTrade.result)).toFixed(2).replace('.',',')}
-                        onChange={(e) => {
-                          const sign = parseTradeResult(editedTrade.result) >= 0 ? '+' : '-';
-                          const value = parseFloat(e.target.value.replace(',', '.')) || 0;
-                          handleTradeInputChange('result', `${sign}R$${value.toFixed(2).replace('.', ',')}`);
-                        }}
+                        value={String(Math.abs(parseTradeResult(editedTrade.result))).replace('.',',')}
+                        onChange={(e) => handleResultInputChange(e.target.value)}
                         placeholder="0,00"
                         className="pl-10"
                     />
