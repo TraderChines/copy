@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Loader2 } from "lucide-react";
@@ -9,7 +8,6 @@ import { ArrowRight, Loader2 } from "lucide-react";
 export default function HomeForm() {
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState("");
-  const router = useRouter();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -25,7 +23,8 @@ export default function HomeForm() {
 
     setLoading(true);
     setTimeout(() => {
-      router.push("/dashboard");
+      // Use direct navigation for static export compatibility
+      window.location.href = "/dashboard";
     }, 2000);
   };
 
