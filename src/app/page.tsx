@@ -22,7 +22,7 @@ export default function Home() {
             </CardHeader>
             <CardContent className="flex-grow flex flex-col justify-between">
               <p className="text-muted-foreground mb-4">
-                Use nosso link de afiliado para se registrar na corretora parceira. É rápido, seguro e essencial para o próximo passo.
+                É obrigatório criar sua conta na corretora através do nosso link para que a conexão funcione. O cadastro é rápido e seguro.
               </p>
               <Button asChild className="w-full mt-auto bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-bold">
                 <a href="#" target="_blank" rel="noopener noreferrer">
