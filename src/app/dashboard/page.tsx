@@ -92,6 +92,8 @@ export default function DashboardPage() {
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [clickCount, setClickCount] = useState(0);
+  
+  const [payout, setPayout] = useState(0.85); // 85% payout default
 
   useEffect(() => {
     if (clickCount >= 5) {
@@ -122,7 +124,7 @@ export default function DashboardPage() {
 
   const totalProfit = currentBalance - initialBalance;
   
-  const wins = history.filter(trade => trade.result.startsWith('+')).length;
+  const wins = history.filter(trade => parseTradeResult(trade.result) > 0).length;
   const totalTrades = history.length;
   const winRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
 
@@ -221,7 +223,6 @@ export default function DashboardPage() {
 
   const handleResultButtonClick = (type: 'win' | 'loss') => {
     if (!editedTrade) return;
-    const payout = 0.85; // 85% payout
     const resultValue = editedTrade.amount * payout;
     const resultString = `${type === 'win' ? '+' : '-'}R$${resultValue.toFixed(2).replace('.', ',')}`;
     handleTradeInputChange('result', resultString);
@@ -335,7 +336,7 @@ export default function DashboardPage() {
                         </TableCell>
                         <TableCell
                           className={`text-right font-semibold ${
-                            trade.result.startsWith("+")
+                            parseTradeResult(trade.result) > 0
                               ? "text-emerald-500"
                               : "text-red-500"
                           }`}
@@ -496,12 +497,22 @@ export default function DashboardPage() {
                       <Button size="sm" className="flex-1 bg-emerald-500/80 hover:bg-emerald-500 text-white" onClick={() => handleResultButtonClick('win')}>Win</Button>
                       <Button size="sm" className="flex-1 bg-red-500/80 hover:bg-red-500 text-white" onClick={() => handleResultButtonClick('loss')}>Loss</Button>
                   </div>
-                  <Input
-                      value={editedTrade.result}
-                      onChange={(e) => handleTradeInputChange('result', e.target.value)}
-                      placeholder="+R$0,00"
-                      className="mt-2"
-                  />
+                  <div className="relative mt-2">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
+                      {parseTradeResult(editedTrade.result) >= 0 ? '+R$' : '-R$'}
+                    </span>
+                    <Input
+                        type="number"
+                        value={Math.abs(parseTradeResult(editedTrade.result)).toFixed(2).replace('.',',')}
+                        onChange={(e) => {
+                          const sign = parseTradeResult(editedTrade.result) >= 0 ? '+' : '-';
+                          const value = parseFloat(e.target.value.replace(',', '.')) || 0;
+                          handleTradeInputChange('result', `${sign}R$${value.toFixed(2).replace('.', ',')}`);
+                        }}
+                        placeholder="0,00"
+                        className="pl-10"
+                    />
+                  </div>
               </div>
             </div>
           )}
