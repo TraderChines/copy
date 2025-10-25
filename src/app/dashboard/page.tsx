@@ -1,14 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { traderData as initialTraderData } from "@/lib/data";
 import type { Trade, TraderData } from "@/lib/data";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import {
   Table,
@@ -84,16 +82,16 @@ export default function DashboardPage() {
     tradeValue: 1500,
     status: "Online",
     history: [
-      { date: "24/10 13:57", asset: "EUR/USD", type: "Put", amount: 1500, result: "+R$1,275.00" },
-      { date: "23/10 14:49", asset: "EUR/USD", type: "Put", amount: 1500, result: "+R$1,305.00" },
-      { date: "22/10 15:09", asset: "EUR/JPY", type: "Put", amount: 4500, result: "-R$4,500.00" },
-      { date: "21/10 16:05", asset: "EUR/USD", type: "Put", amount: 1500, result: "-R$1,500.00" },
-      { date: "20/10 13:22", asset: "EUR/JPY", type: "Put", amount: 10500, result: "+R$9,240.00" },
-      { date: "20/10 03:00", asset: "EUR/JPY", type: "Put", amount: 4497, result: "+R$1,139.24" },
-      { date: "20/10 02:56", asset: "EUR/JPY", type: "Put", amount: 7495, result: "+R$6,595.60" },
-      { date: "17/10 13:17", asset: "EUR/USD", type: "Put", amount: 4500, result: "+R$1,140.00" },
-      { date: "16/10 12:45", asset: "EUR/JPY", type: "Call", amount: 4500, result: "+R$3,960.00" },
-      { date: "14/10 14:05", asset: "AUD/JPY", type: "Call", amount: 1500, result: "+R$1,335.00" },
+      { date: "24/10 13:57", asset: "EUR/USD", type: "Put", amount: 1500, result: "+R$1.275,00" },
+      { date: "23/10 14:49", asset: "EUR/USD", type: "Put", amount: 1500, result: "+R$1.305,00" },
+      { date: "22/10 15:09", asset: "EUR/JPY", type: "Put", amount: 4500, result: "-R$4.500,00" },
+      { date: "21/10 16:05", asset: "EUR/USD", type: "Put", amount: 1500, result: "-R$1.500,00" },
+      { date: "20/10 13:22", asset: "EUR/JPY", type: "Put", amount: 10500, result: "+R$9.240,00" },
+      { date: "20/10 03:00", asset: "EUR/JPY", type: "Put", amount: 4497, result: "+R$1.139,24" },
+      { date: "20/10 02:56", asset: "EUR/JPY", type: "Put", amount: 7495, result: "+R$6.595,60" },
+      { date: "17/10 13:17", asset: "EUR/USD", type: "Put", amount: 4500, result: "+R$1.140,00" },
+      { date: "16/10 12:45", asset: "EUR/JPY", type: "Call", amount: 4500, result: "+R$3.960,00" },
+      { date: "14/10 14:05", asset: "AUD/JPY", type: "Call", amount: 1500, result: "+R$1.335,00" },
     ],
   });
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -237,27 +235,30 @@ export default function DashboardPage() {
   const handleResultButtonClick = (type: 'win' | 'loss') => {
     if (!editedTrade) return;
     const resultValue = editedTrade.amount * payout;
-    const resultString = `${type === 'win' ? '+' : '-'}R$${resultValue.toFixed(2).replace('.', ',')}`;
+    const formattedResult = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(resultValue);
+    const resultString = `${type === 'win' ? '+' : '-'}R$${formattedResult}`;
     handleTradeInputChange('result', resultString);
   };
   
   const handleResultInputChange = (inputValue: string) => {
     if (!editedTrade) return;
     
-    // Allow empty input or just a sign
-    if (inputValue === '' || inputValue === '+' || inputValue === '-') {
-      handleTradeInputChange('result', `${inputValue}R$0,00`);
-      return;
-    }
-    
-    const numValue = parseFloat(inputValue.replace(',', '.')) || 0;
-    const sign = numValue >= 0 ? '+' : '-';
-    
-    // Get existing sign to preserve it if user is just typing numbers
     const existingSign = parseTradeResult(editedTrade.result) >= 0 ? '+' : '-';
-    const finalSign = inputValue.startsWith('+') || inputValue.startsWith('-') ? sign : existingSign;
     
-    const resultString = `${finalSign}R$${Math.abs(numValue).toFixed(2).replace('.', ',')}`;
+    // Remove non-numeric characters, except for comma
+    const numericValue = inputValue.replace(/[^0-9,]/g, '').replace(',', '.');
+    const value = parseFloat(numericValue) || 0;
+
+    const formattedResult = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(value);
+    
+    let finalSign = existingSign;
+    if (inputValue.startsWith('+')) {
+      finalSign = '+';
+    } else if (inputValue.startsWith('-')) {
+      finalSign = '-';
+    }
+
+    const resultString = `${finalSign}R$${formattedResult}`;
     handleTradeInputChange('result', resultString);
   }
 
@@ -334,7 +335,7 @@ export default function DashboardPage() {
             <CardHeader className="flex flex-row justify-between items-center">
               <div>
                 <CardTitle>Histórico de Operações</CardTitle>
-                <CardDescription>As últimas operações realizadas.</CardDescription>
+                <DialogDescription>As últimas operações realizadas.</DialogDescription>
               </div>
               {isEditMode && (
                 <Button size="sm" onClick={() => handleOpenTradeModal(null, null)}>
@@ -540,7 +541,7 @@ export default function DashboardPage() {
                         value={String(Math.abs(parseTradeResult(editedTrade.result))).replace('.',',')}
                         onChange={(e) => handleResultInputChange(e.target.value)}
                         placeholder="0,00"
-                        className="pl-10"
+                        className="pl-10 text-right"
                     />
                   </div>
               </div>
