@@ -8,6 +8,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
 import {
   Table,
@@ -242,11 +243,24 @@ export default function DashboardPage() {
   
   const handleResultInputChange = (inputValue: string) => {
     if (!editedTrade) return;
-    const sign = parseTradeResult(editedTrade.result) >= 0 ? '+' : '-';
+    
+    // Allow empty input or just a sign
+    if (inputValue === '' || inputValue === '+' || inputValue === '-') {
+      handleTradeInputChange('result', `${inputValue}R$0,00`);
+      return;
+    }
+    
     const numValue = parseFloat(inputValue.replace(',', '.')) || 0;
-    const resultString = `${sign}R$${numValue.toFixed(2).replace('.', ',')}`;
+    const sign = numValue >= 0 ? '+' : '-';
+    
+    // Get existing sign to preserve it if user is just typing numbers
+    const existingSign = parseTradeResult(editedTrade.result) >= 0 ? '+' : '-';
+    const finalSign = inputValue.startsWith('+') || inputValue.startsWith('-') ? sign : existingSign;
+    
+    const resultString = `${finalSign}R$${Math.abs(numValue).toFixed(2).replace('.', ',')}`;
     handleTradeInputChange('result', resultString);
   }
+
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -517,12 +531,12 @@ export default function DashboardPage() {
                       <Button size="sm" className="flex-1 bg-emerald-500/80 hover:bg-emerald-500 text-white" onClick={() => handleResultButtonClick('win')}>Win</Button>
                       <Button size="sm" className="flex-1 bg-red-500/80 hover:bg-red-500 text-white" onClick={() => handleResultButtonClick('loss')}>Loss</Button>
                   </div>
-                  <div className="relative mt-2">
+                   <div className="relative mt-2">
                     <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
                       {parseTradeResult(editedTrade.result) >= 0 ? '+R$' : '-R$'}
                     </span>
                     <Input
-                        type="number"
+                        type="text"
                         value={String(Math.abs(parseTradeResult(editedTrade.result))).replace('.',',')}
                         onChange={(e) => handleResultInputChange(e.target.value)}
                         placeholder="0,00"
@@ -548,3 +562,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
