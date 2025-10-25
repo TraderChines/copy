@@ -1,8 +1,13 @@
 import type {NextConfig} from 'next';
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const nextConfig: NextConfig = {
   output: 'export',
-  /* config options here */
+  // Configure o basePath para o nome do seu repositório no GitHub
+  basePath: isProd ? '/copy' : '', 
+  // Garante que as URLs tenham uma barra no final, o que é compatível com o GitHub Pages
+  trailingSlash: true, 
   typescript: {
     ignoreBuildErrors: true,
   },
