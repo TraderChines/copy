@@ -38,9 +38,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
   DialogClose,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -101,11 +101,12 @@ export default function DashboardPage() {
   const [editedProfile, setEditedProfile] = useState(traderData);
   const [editedTrade, setEditedTrade] = useState<Trade | null>(null);
   const [editedTradeIndex, setEditedTradeIndex] = useState<number | null>(null);
+  const [rawResult, setRawResult] = useState("");
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [clickCount, setClickCount] = useState(0);
   
-  const [payout, setPayout] = useState(0.85); // 85% payout default
+  const [payout] = useState(0.85); // 85% payout default
 
   useEffect(() => {
     if (clickCount >= 5) {
@@ -185,23 +186,35 @@ export default function DashboardPage() {
   };
 
   const handleOpenTradeModal = (trade: Trade | null, index: number | null) => {
-    setEditedTrade(trade ? { ...trade } : { ...emptyTrade, amount: traderData.tradeValue });
+    const tradeToEdit = trade ? { ...trade } : { ...emptyTrade, amount: traderData.tradeValue };
+    setEditedTrade(tradeToEdit);
     setEditedTradeIndex(index);
+    if(trade) {
+        const numericResult = String(Math.abs(parseTradeResult(trade.result)));
+        setRawResult(numericResult.replace('.',','));
+    } else {
+        setRawResult("");
+    }
     setIsTradeModalOpen(true);
   };
 
   const handleSaveTrade = () => {
     if (!editedTrade) return;
 
+    const resultValue = parseFloat(rawResult.replace(',', '.')) || 0;
+    const sign = editedTrade.result.startsWith('-') ? '-' : '+';
+    
+    const finalResult = `${sign}R$${new Intl.NumberFormat('pt-BR', { style: 'decimal', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(resultValue)}`;
+
+    const finalTrade = { ...editedTrade, result: finalResult };
+
     let newHistory: Trade[];
     if (editedTradeIndex !== null) {
-      // Edit existing trade
       newHistory = traderData.history.map((trade, index) =>
-        index === editedTradeIndex ? editedTrade : trade
+        index === editedTradeIndex ? finalTrade : trade
       );
     } else {
-      // Add new trade
-      newHistory = [editedTrade, ...traderData.history];
+      newHistory = [finalTrade, ...traderData.history];
     }
     
     const newCurrentBalance = newHistory.reduce((acc, trade) => acc + parseTradeResult(trade.result), traderData.initialBalance);
@@ -215,6 +228,7 @@ export default function DashboardPage() {
     setIsTradeModalOpen(false);
     setEditedTrade(null);
     setEditedTradeIndex(null);
+    setRawResult("");
   };
 
   const handleRemoveTrade = (indexToRemove: number) => {
@@ -232,37 +246,16 @@ export default function DashboardPage() {
       setEditedTrade({ ...editedTrade, [field]: value });
     }
   };
-
+  
   const handleResultButtonClick = (type: 'win' | 'loss') => {
     if (!editedTrade) return;
-    const resultValue = editedTrade.amount * payout;
-    const formattedResult = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(resultValue).replace('R$', '').trim();
-    const resultString = `${type === 'win' ? '+' : '-'}R$${formattedResult}`;
-    handleTradeInputChange('result', resultString);
+
+    const resultValue = type === 'win' ? editedTrade.amount * payout : editedTrade.amount;
+    const resultSign = type === 'win' ? '+' : '-';
+    
+    setEditedTrade({ ...editedTrade, result: `${resultSign}R$` }); 
+    setRawResult(resultValue.toFixed(2).replace('.', ','));
   };
-  
-  const handleResultInputChange = (inputValue: string) => {
-    if (!editedTrade) return;
-    
-    const existingSign = parseTradeResult(editedTrade.result) >= 0 ? '+' : '-';
-    
-    // Remove non-numeric characters, except for comma
-    const numericValue = inputValue.replace(/[^0-9,]/g, '').replace(',', '.');
-    const value = parseFloat(numericValue) || 0;
-
-    const formattedResult = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value).replace('R$', '').trim();
-    
-    let finalSign = existingSign;
-    if (inputValue.startsWith('+')) {
-      finalSign = '+';
-    } else if (inputValue.startsWith('-')) {
-      finalSign = '-';
-    }
-
-    const resultString = `${finalSign}R$${formattedResult}`;
-    handleTradeInputChange('result', resultString);
-  }
-
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -534,13 +527,13 @@ export default function DashboardPage() {
                       <Button size="sm" className="flex-1 bg-red-500/80 hover:bg-red-500 text-white" onClick={() => handleResultButtonClick('loss')}>Loss</Button>
                   </div>
                    <div className="relative mt-2">
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
-                      {parseTradeResult(editedTrade.result) >= 0 ? '+R$' : '-R$'}
+                     <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
+                        {editedTrade.result.startsWith('-') ? '-R$' : '+R$'}
                     </span>
                     <Input
                         type="text"
-                        value={new Intl.NumberFormat('pt-BR', {minimumFractionDigits: 2}).format(Math.abs(parseTradeResult(editedTrade.result)))}
-                        onChange={(e) => handleResultInputChange(e.target.value)}
+                        value={rawResult}
+                        onChange={(e) => setRawResult(e.target.value.replace(/[^0-9,]/g, ''))}
                         placeholder="0,00"
                         className="pl-12 text-right"
                     />
