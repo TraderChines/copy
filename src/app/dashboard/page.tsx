@@ -278,12 +278,14 @@ export default function DashboardPage() {
                 Sair do Modo de Edição
               </Button>
             )}
-            <Button asChild variant="outline" size="sm">
-              <Link href="/">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Página Inicial
-              </Link>
-            </Button>
+            <Link href="/" passHref legacyBehavior>
+              <Button asChild variant="outline" size="sm">
+                <a>
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Página Inicial
+                </a>
+              </Button>
+            </Link>
           </div>
       </header>
       <main className="p-4 sm:p-6 lg:p-8 grid gap-8 md:grid-cols-3">
