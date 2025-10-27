@@ -65,11 +65,13 @@ const assetOptions = [
     "AUD/CAD", "AUD/JPY", "AUD/NZD", "AUD/USD", "CAD/JPY", 
     "EUR/AUD", "EUR/CAD", "EUR/GBP", "EUR/JPY", "EUR/NZD", "EUR/USD", 
     "GBP/AUD", "GBP/CAD", "GBP/JPY", "GBP/NZD", "GBP/USD", 
-    "NZD/JPY", "NZD/USD", "USD/CAD", "USD/CHF", "USD/JPY"
+    "NZD/JPY", "NZD/USD", "USD/CAD", "USD/CHF", "USD/JPY",
+    "BRL/JPY", "CHF/JPY", "GBP/CHF", "NZD/CAD", "USD/SEK",
+    "AUD/CHF"
 ];
 
 const emptyTrade: Trade = {
-  date: new Intl.DateTimeFormat('pt-BR', { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date()),
+  date: new Intl.DateTimeFormat('pt-BR', { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date()).replace(',', ''),
   asset: 'EUR/USD',
   type: "Call",
   amount: 0,
@@ -84,17 +86,17 @@ export default function DashboardPage() {
     tradeValue: 1500,
     status: "Offline",
     history: [
-      { date: "27/10/25, 20:43", asset: "USD/JPY", type: "Call", amount: 1500, result: "+R$1.305,00" },
-      { date: "24/10 13:57", asset: "EUR/USD", type: "Put", amount: 1500, result: "+R$1.275,00" },
-      { date: "23/10 14:49", asset: "EUR/USD", type: "Put", amount: 1500, result: "+R$1.305,00" },
-      { date: "22/10 15:09", asset: "EUR/JPY", type: "Put", amount: 4500, result: "-R$4.500,00" },
-      { date: "21/10 16:05", asset: "EUR/USD", type: "Put", amount: 1500, result: "-R$1.500,00" },
-      { date: "20/10 13:22", asset: "EUR/JPY", type: "Put", amount: 10500, result: "+R$9.240,00" },
-      { date: "20/10 03:00", asset: "EUR/JPY", type: "Put", amount: 4497, result: "+R$1.139,24" },
-      { date: "20/10 02:56", asset: "EUR/JPY", type: "Put", amount: 7495, result: "+R$6.595,60" },
-      { date: "17/10 13:17", asset: "EUR/USD", type: "Put", amount: 4500, result: "+R$1.140,00" },
-      { date: "16/10 12:45", asset: "EUR/JPY", type: "Call", amount: 4500, result: "+R$3.960,00" },
-      { date: "14/10 14:05", asset: "AUD/JPY", type: "Call", amount: 1500, result: "+R$1.335,00" },
+      { date: "27/10/25 20:43", asset: "USD/JPY", type: "Call", amount: 1500, result: "+R$1.305,00" },
+      { date: "24/10/25 13:57", asset: "EUR/USD", type: "Put", amount: 1500, result: "+R$1.275,00" },
+      { date: "23/10/25 14:49", asset: "EUR/USD", type: "Put", amount: 1500, result: "+R$1.305,00" },
+      { date: "22/10/25 15:09", asset: "EUR/JPY", type: "Put", amount: 4500, result: "-R$4.500,00" },
+      { date: "21/10/25 16:05", asset: "EUR/USD", type: "Put", amount: 1500, result: "-R$1.500,00" },
+      { date: "20/10/25 13:22", asset: "EUR/JPY", type: "Put", amount: 10500, result: "+R$9.240,00" },
+      { date: "20/10/25 03:00", asset: "EUR/JPY", type: "Put", amount: 4497, result: "+R$1.139,24" },
+      { date: "20/10/25 02:56", asset: "EUR/JPY", type: "Put", amount: 7495, result: "+R$6.595,60" },
+      { date: "17/10/25 13:17", asset: "EUR/USD", type: "Put", amount: 4500, result: "+R$1.140,00" },
+      { date: "16/10/25 12:45", asset: "EUR/JPY", type: "Call", amount: 4500, result: "+R$3.960,00" },
+      { date: "14/10/25 14:05", asset: "AUD/JPY", type: "Call", amount: 1500, result: "+R$1.335,00" },
     ],
   });
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -182,7 +184,6 @@ export default function DashboardPage() {
   };
   
   const handleSaveProfile = () => {
-    // A lógica de recálculo foi removida. O saldo atual é salvo diretamente do modal.
     setTraderData(editedProfile);
     setIsProfileModalOpen(false);
   };
