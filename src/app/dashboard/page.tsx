@@ -67,7 +67,7 @@ const assetOptions = [
     "GBP/AUD", "GBP/CAD", "GBP/JPY", "GBP/NZD", "GBP/USD", 
     "NZD/JPY", "NZD/USD", "USD/CAD", "USD/CHF", "USD/JPY",
     "BRL/JPY", "CHF/JPY", "GBP/CHF", "NZD/CAD", "USD/SEK",
-    "AUD/CHF"
+    "AUD/CHF", "CAD/CHF", "EUR/CHF", "NZD/CHF", "XAU/USD"
 ];
 
 const emptyTrade: Trade = {
@@ -139,10 +139,11 @@ export default function DashboardPage() {
     history,
   } = traderData;
 
+  const lastTenTrades = history.slice(0, 10);
   const totalProfit = currentBalance - initialBalance;
   
-  const wins = history.filter(trade => parseTradeResult(trade.result) > 0).length;
-  const totalTrades = history.length;
+  const wins = lastTenTrades.filter(trade => parseTradeResult(trade.result) > 0).length;
+  const totalTrades = lastTenTrades.length;
   const winRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
 
   const stats = [
