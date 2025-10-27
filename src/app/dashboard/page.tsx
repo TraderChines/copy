@@ -62,14 +62,10 @@ const formatCurrency = (value: number) => {
 };
 
 const assetOptions = [
-    "AUD/CAD",
-    "AUD/JPY",
-    "AUD/NZD",
-    "AUD/USD",
-    "EUR/JPY",
-    "EUR/USD",
-    "USD/CAD",
-    "USD/JPY",
+    "AUD/CAD", "AUD/JPY", "AUD/NZD", "AUD/USD", "CAD/JPY", 
+    "EUR/AUD", "EUR/CAD", "EUR/GBP", "EUR/JPY", "EUR/NZD", "EUR/USD", 
+    "GBP/AUD", "GBP/CAD", "GBP/JPY", "GBP/NZD", "GBP/USD", 
+    "NZD/JPY", "NZD/USD", "USD/CAD", "USD/CHF", "USD/JPY"
 ];
 
 const emptyTrade: Trade = {
@@ -185,8 +181,8 @@ export default function DashboardPage() {
   };
   
   const handleSaveProfile = () => {
-    const newCurrentBalance = editedProfile.history.reduce((acc, trade) => acc + parseTradeResult(trade.result), editedProfile.initialBalance);
-    setTraderData({ ...editedProfile, currentBalance: newCurrentBalance });
+    // A lógica de recálculo foi removida. O saldo atual é salvo diretamente do modal.
+    setTraderData(editedProfile);
     setIsProfileModalOpen(false);
   };
 
@@ -406,7 +402,7 @@ export default function DashboardPage() {
           <DialogHeader>
             <DialogTitle>Editar Perfil do Trader</DialogTitle>
             <DialogDescription>
-              Altere as informações gerais e clique em salvar. O saldo atual será recalculado com base no histórico.
+              Altere as informações gerais e clique em salvar.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -430,6 +426,18 @@ export default function DashboardPage() {
                       type="number"
                       value={editedProfile.initialBalance}
                       onChange={(e) => setEditedProfile({ ...editedProfile, initialBalance: parseFloat(e.target.value) || 0 })}
+                      className="col-span-2"
+                  />
+              </div>
+              <div className="grid grid-cols-3 items-center gap-4">
+                  <Label htmlFor="currentBalance" className="text-right">
+                      Saldo Atual
+                  </Label>
+                  <Input
+                      id="currentBalance"
+                      type="number"
+                      value={editedProfile.currentBalance}
+                      onChange={(e) => setEditedProfile({ ...editedProfile, currentBalance: parseFloat(e.target.value) || 0 })}
                       className="col-span-2"
                   />
               </div>
