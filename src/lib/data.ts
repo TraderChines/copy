@@ -18,10 +18,11 @@ export interface TraderData {
 export const traderData: TraderData = {
   name: "Trader Chinês",
   initialBalance: 1177.78,
-  currentBalance: 30905.91,
+  currentBalance: 32210.91,
   tradeValue: 1500,
-  status: "Online",
+  status: "Offline",
   history: [
+    { date: "27/10/25, 20:43", asset: "USD/JPY", type: "Call", amount: 1500, result: "+R$1.305,00" },
     { date: "24/10 13:57", asset: "EUR/USD", type: "Put", amount: 1500, result: "+R$1.275,00" },
     { date: "23/10 14:49", asset: "EUR/USD", type: "Put", amount: 1500, result: "+R$1.305,00" },
     { date: "22/10 15:09", asset: "EUR/JPY", type: "Put", amount: 4500, result: "-R$4.500,00" },

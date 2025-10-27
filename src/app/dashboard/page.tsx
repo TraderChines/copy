@@ -80,10 +80,11 @@ export default function DashboardPage() {
   const [traderData, setTraderData] = useState<TraderData>({
     name: "Trader Chinês",
     initialBalance: 1177.78,
-    currentBalance: 30905.91,
+    currentBalance: 32210.91,
     tradeValue: 1500,
-    status: "Online",
+    status: "Offline",
     history: [
+      { date: "27/10/25, 20:43", asset: "USD/JPY", type: "Call", amount: 1500, result: "+R$1.305,00" },
       { date: "24/10 13:57", asset: "EUR/USD", type: "Put", amount: 1500, result: "+R$1.275,00" },
       { date: "23/10 14:49", asset: "EUR/USD", type: "Put", amount: 1500, result: "+R$1.305,00" },
       { date: "22/10 15:09", asset: "EUR/JPY", type: "Put", amount: 4500, result: "-R$4.500,00" },
@@ -107,7 +108,7 @@ export default function DashboardPage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [clickCount, setClickCount] = useState(0);
   
-  const [payout] = useState(0.85); // 85% payout default
+  const [payout] = useState(0.87); // 87% payout default
 
   useEffect(() => {
     if (clickCount >= 5) {
@@ -313,7 +314,7 @@ export default function DashboardPage() {
 
         <div className="md:col-span-2 flex flex-col gap-8">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {stats.map((stat) => (
+            {stats.slice(0, -1).map((stat) => (
               <Card key={stat.title}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -326,6 +327,17 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             ))}
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Assertividade
+                  </CardTitle>
+                  <Target className="h-5 w-5 text-rose-400" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{`${winRate.toFixed(1)}%`}</div>
+                </CardContent>
+              </Card>
           </div>
 
           <Card>
