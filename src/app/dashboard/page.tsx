@@ -345,7 +345,7 @@ export default function DashboardPage() {
             <CardHeader className="flex flex-row justify-between items-center">
               <div>
                 <CardTitle>Histórico de Operações</CardTitle>
-                <CardDescription>As últimas operações realizadas.</CardDescription>
+                <CardDescription>As últimas 10 operações realizadas.</CardDescription>
               </div>
               {isEditMode && (
                 <Button size="sm" onClick={() => handleOpenTradeModal(null, null)}>
@@ -367,7 +367,7 @@ export default function DashboardPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {history.map((trade, index) => (
+                    {history.slice(0, 10).map((trade, index) => (
                       <TableRow key={index}>
                         <TableCell className="font-medium">{trade.date}</TableCell>
                         <TableCell>{trade.asset}</TableCell>
