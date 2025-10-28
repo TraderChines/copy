@@ -25,7 +25,7 @@ export default function Home() {
                 É necessário criar sua conta na corretora pelo botão abaixo para que a conexão funcione. O cadastro é rápido e seguro.
               </p>
               <Button asChild className="w-full mt-auto bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-bold">
-                <a href="#" target="_blank" rel="noopener noreferrer">
+                <a href="https://exnova.com/lp/start-trading/?aff=198544&aff_model=revenue&afftrack=" target="_blank" rel="noopener noreferrer">
                   Criar conta na corretora
                   <ExternalLink className="ml-2 h-4 w-4" />
                 </a>
