@@ -22,7 +22,7 @@ export default function Home() {
             </CardHeader>
             <CardContent className="flex-grow flex flex-col justify-between">
               <p className="text-muted-foreground mb-4">
-                É obrigatório criar sua conta na corretora através do nosso link para que a conexão funcione. O cadastro é rápido e seguro.
+                É necessário criar sua conta na corretora pelo botão abaixo para que a conexão funcione. O cadastro é rápido e seguro.
               </p>
               <Button asChild className="w-full mt-auto bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-bold">
                 <a href="#" target="_blank" rel="noopener noreferrer">
